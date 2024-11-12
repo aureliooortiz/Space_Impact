@@ -29,10 +29,10 @@ int main() {
 	al_install_keyboard() ;
 		
 	// Cria e inicializa a janela
-	al_set_new_display_flags(ALLEGRO_RESIZABLE) ;
 	janela = al_create_display(ALT_TELA, LARG_TELA) ;
 	al_set_window_position(janela, POS_TELA, POS_TELA) ;
 	al_set_window_title(janela, NOME_TELA) ;
+	al_set_new_display_flags(ALLEGRO_RESIZABLE) ;
 	
 	// Cria a taxa de atualização do jogo FPS
 	tempo = al_create_timer(1.0 / 30.0) ;
@@ -41,11 +41,16 @@ int main() {
 	fila_de_eventos = al_create_event_queue() ;
 	al_register_event_source(fila_de_eventos, al_get_keyboard_event_source()) ;
 	al_register_event_source(fila_de_eventos, al_get_timer_event_source(tempo)) ;
+	al_register_event_source(fila_de_eventos, al_get_display_event_source(janela));
 	
+	bool running = true ; 
 	al_start_timer(tempo) ;		
 	// Loop principal do jogo
-	while (1) {
+	while (running) {
 		al_wait_for_event(fila_de_eventos, &eventos) ;
+		
+		if (eventos.type == ALLEGRO_EVENT_DISPLAY_CLOSE) 
+			running = false ;	
 		
 		if (eventos.type == ALLEGRO_EVENT_TIMER) {
 			// Pinta a tela de preto e desenha dois triangulos nela
@@ -55,13 +60,13 @@ int main() {
 			// Atualiza a tela
 			al_flip_display() ;
 			al_clear_to_color(al_map_rgb(0, 0, 0)) ;			
-			
-		} else if (eventos.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break ;	
+			 
+		} 
 	}
 	
 	al_destroy_display(janela) ;
-	al_destroy_timer(tempo);														
-	al_destroy_event_queue(fila_de_eventos);
+	al_destroy_timer(tempo) ;														
+	al_destroy_event_queue(fila_de_eventos) ;
 	
 	return 0 ;
 }
