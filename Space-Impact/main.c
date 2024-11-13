@@ -4,12 +4,13 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
+// Faz o movimento depois verifica a colisão
+
 // Definições da janela
 #define ALT_TELA 1280
 #define LARG_TELA 720
 #define POS_TELA 100
 #define NOME_TELA "Space Impact"
-
 
 int main() {
 	ALLEGRO_DISPLAY *janela ;
@@ -18,6 +19,10 @@ int main() {
 	ALLEGRO_EVENT_QUEUE *fila_de_eventos ;
 	ALLEGRO_EVENT eventos ;
 	ALLEGRO_TIMER *tempo ;
+	struct jogador_t *player ;
+	int x1, x2, x3 ;
+	int y1, y2, y3 ;
+	int dy ;
 	
 	// Inicializa váriaveis de cor
 	azul = al_map_rgb(0, 0, 255) ;
@@ -43,19 +48,27 @@ int main() {
 	al_register_event_source(fila_de_eventos, al_get_timer_event_source(tempo)) ;
 	al_register_event_source(fila_de_eventos, al_get_display_event_source(janela));
 	
-	bool running = true ; 
+	// Cria um jogador
+	player = cria_jogador (LARG_TELA/2, ALT_TELA/2) ;
+	
 	al_start_timer(tempo) ;		
 	// Loop principal do jogo
-	while (running) {
+	while (1) {
 		al_wait_for_event(fila_de_eventos, &eventos) ;
 		
-		if (eventos.type == ALLEGRO_EVENT_DISPLAY_CLOSE) 
-			running = false ;	
+		// Evento de clique no "x" da janela
+		if (eventos.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break ;	
 		
 		if (eventos.type == ALLEGRO_EVENT_TIMER) {
-			// Pinta a tela de preto e desenha dois triangulos nela
-			al_draw_filled_triangle(1*20, 1*20, 1*20, 5*20, 3*20, 3*20, azul) ;
-			al_draw_filled_triangle(1*20, 1*20+500, 1*20, 5*20+500, 3*20, 3*20+500, vermelho) ;
+			
+			// Cordenadas que definem o triangulo
+			x1 = 20 ; y1 = 20 ;
+			x2 = 20 ;	y2 = 40 ;
+			x3 = 60 ;	y3 = 60 ; 
+			// Distancia de um reatangulo a outro no eixo y
+			dy = 600 ;
+			al_draw_filled_rectangle(x1, y1, x2, y2, x3, azul) ;
+			al_draw_filled_rectangle(x1, y1+dy, x2, y2+dy, x3, y3+dy, vermelho) ;
 			
 			// Atualiza a tela
 			al_flip_display() ;
