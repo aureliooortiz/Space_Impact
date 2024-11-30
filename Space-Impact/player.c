@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "player.h"
@@ -12,6 +13,8 @@ struct jogador_t *cria_jogador (int x, int y) {
 	p->arma = cria_arma() ;
 	p->x = x ;
 	p->y = y ;
+	p->gelo_timer = 0 ;  
+	// Vida máxima do jogador
 	p->vida = 3 ;
 	p->invulnerabilidade = 0 ;
 	
@@ -42,7 +45,6 @@ void movimenta_jogador (struct jogador_t *p, int passo, int trajetoria) {
 			}	
 			break ;	
 	}
-
 }
 
 void jogador_atira (struct jogador_t *p) {
@@ -51,12 +53,17 @@ void jogador_atira (struct jogador_t *p) {
 	// Tiro sempre parte de um deslocamento fixo à direita do centro, saindo do meio
 	tiro = tiro_de_arma(p->x + LADO_QUADRADO/2, p->y + LADO_QUADRADO/2, p->arma) ;
 	
+	// Se o timer estiver ativo signifca que o player pegou o tiro congelante
+	if (p->gelo_timer) {
+		tiro_congelante (tiro) ;
+	}
+	
 	p->arma->bala = tiro ;
 }
 
 void jogador_perde_vida (struct jogador_t *p) {
 	p->vida-- ;
-	p->invulnerabilidade = 90 ;
+	p->invulnerabilidade = DANO_COOLDOWN ;
 }
 
 // Destroi um player

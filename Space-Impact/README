@@ -1,0 +1,30 @@
+OBSERVAÇÕES:
+
+VERIFICAÇÃO DE DANO:
+ O dano é verificado quando o player se move, no entanto isso ocasiona um bug de que
+o player não sofre dano quando o mesmo está parado. Atualmente é feito realizando uma 
+segunda verificação quando o inimigo se move. NO ENTANTO, uma solução mais inteligente é
+apenas manter a segunda verificação, algo a ser modificado posteriormente.
+
+ORGANIZAÇÃO:
+ Há funções que fazem mais do que o próprio nome diz, isso torna o código feio e de dificil
+manutenção. 
+
+LIBERAR MEMÓRIA:
+ Atualmente há memórias que não estão sendo desalocadas, um exemplo são as balas dos inimigos
+que não são liberadas quando os mesmos são mortos, a correção é simples apenas o fazendo ao chamar
+a função de destroi inimigos.  
+ 
+BUGS:
+ Há um bug visual que os inimigos ficam meio "cortados" se movimentando, talvez não tenha concerto.
+
+NASCIMENTO DE INIMIGOS:
+ Os inimigos podem nascer no mesmo lugar e isso não deve acontecer, posteriormente isso deve ser corrigido.
+
+CORREÇÕES:
+ Estas são atualizações tornam o jogo melhor no entanto não devem prejudicar na nota,
+por exemplo, quando um inimigo morre seus tiros desaparecem da tela junto com o mesmo, 
+isto pode ser corrigido ao criar uma lista de balas fora do inimigo.
+ Outra coisa são as balas que não desaparecem quando acertam inimigos, o que pode/deve
+ser consertado no futuro. Por conta da aleatoriedade e da ordem da verificação de colisão 
+inimigos podem acabar se colidindo sem consequencias.

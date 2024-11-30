@@ -9,6 +9,8 @@ struct bala_t *cria_bala (int x, int y, struct bala_t *n) {
 	b = (struct bala_t*)malloc (sizeof(struct bala_t)) ;
 	b->x = x ;
 	b->y = y ;
+	b->acertou = 0 ;
+	b->congelante = 0 ;
 	b->prox = (struct bala_t*)n ;
 	
 	return b ;

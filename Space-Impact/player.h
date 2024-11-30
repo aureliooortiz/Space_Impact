@@ -3,6 +3,7 @@
 
 #include "controle.h"
 #include "arma.h"
+#include "powerup.h"
 
 // Direções que o player pode andar
 #define BAIXO 0
@@ -10,8 +11,10 @@
 #define DIREITA 2
 #define ESQUERDA 3
 
+#define DANO_COOLDOWN 90
+
 // Velocidade do andar do jogador
-#define PASSO_QUADRADO 5
+#define PASSO_QUADRADO 7
 
 #define LADO_QUADRADO 50
 
@@ -23,6 +26,7 @@ struct jogador_t {
 	int y ;
 	int vida ;
 	int invulnerabilidade ;
+	int gelo_timer ;
 } ;
 
 // Cria e retorna um player

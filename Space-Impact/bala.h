@@ -5,6 +5,8 @@
 
 struct bala_t {
 	struct bala_t *prox ;
+	int congelante ;
+	int acertou ;
 	// Posição atual da bala
 	int x ;
 	int y ;

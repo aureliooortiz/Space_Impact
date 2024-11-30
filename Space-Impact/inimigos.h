@@ -6,6 +6,7 @@
 // Velocidade que anda o inimigo
 #define PASSO_INIMIGO 7
 
+// Cooldown de nascimento 
 #define INIMIGO_COOLDOWN_1 100
 #define INIMIGO_COOLDOWN_2 70
 
@@ -19,7 +20,12 @@ struct lista_t {
 struct inimigo_t {
 	int x ;
 	int y ;
+	int congelado ;
+	// Cooldown para o inimigo se mover a uma direção aleatoria
 	int move_timer ;
+	int vida ;
+	// Indica se o inimigo levou dano
+	int pisca ;
 	struct inimigo_t *prox ;
 	struct arma_t *arma ;
 } ;
@@ -30,11 +36,10 @@ struct inimigo_t *cria_inimigo(int x, int y, struct inimigo_t *n) ;
 // Cria lista que armazenaraá os inimigos
 struct lista_t *cria_lista_inimigos () ;
 
-// Funções de movimentação 
-void inimigo_esquerda (struct inimigo_t *i) ;
-void inimigo_direita(struct inimigo_t *i) ; 
-void inimigo_cima(struct inimigo_t *i) ;
-void inimigo_baixo(struct inimigo_t *i) ;
+// Função de movimentação 
+void movimenta_inimigo (struct inimigo_t *i, int passo, int trajetoria) ;
+
+void inimigo_perde_vida(struct inimigo_t *i) ;
 
 // Inimigo dispara projétil
 void inimigo_atira(struct inimigo_t *i) ;

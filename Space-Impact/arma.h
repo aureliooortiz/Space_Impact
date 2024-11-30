@@ -6,6 +6,8 @@
 // A cada 10 frames é possivel atirar novamente
 #define ARMA_COOLDOWN 10
 
+#define INIMIGO_ARMA_COOLDOWN 30
+
 struct arma_t {
 	struct bala_t *bala ;
 	int timer ;

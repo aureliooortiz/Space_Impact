@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "player.h"
 #include "arma.h"
 #include "inimigos.h"
 #include "utili.h"
@@ -12,6 +13,9 @@ struct inimigo_t *cria_inimigo(int x, int y, struct inimigo_t *n) {
 	i->x = x ;
 	i->y = y ;
 	i->move_timer = 0 ;
+	i->vida = 30 ;
+	i->pisca = 0 ;
+	i->congelado = 0 ;
 	i->arma = cria_arma() ;
 	i->prox = n ;
 	
@@ -29,24 +33,33 @@ struct lista_t *cria_lista_inimigos () {
 	return l ;
 }
 
-// Funções de movimentação 
-void inimigo_esquerda (struct inimigo_t *i) {
-	i->x -= PASSO_INIMIGO ;
+// Função de movimentação 
+void movimenta_inimigo (struct inimigo_t *i, int passo, int trajetoria) {
+	switch (trajetoria) {
+		case BAIXO:
+			if ((i->y + PASSO_INIMIGO) < ALT_TELA) {
+				i->y += passo*PASSO_INIMIGO ;
+			}	
+			break ;
+		case CIMA:
+			if ((i->y - PASSO_INIMIGO) > 0) {
+				i->y -= passo*PASSO_INIMIGO ;
+			}	
+			break ;
+		case DIREITA:
+			if ((i->x + PASSO_INIMIGO) < LARG_TELA) {	
+				i->x += passo*PASSO_INIMIGO ;
+			}	
+			break ;		
+		case ESQUERDA:
+			i->x -= passo*PASSO_INIMIGO ;
+			break ;	
+	}
 }
-void inimigo_direita(struct inimigo_t *i) {
-	if ((i->x + PASSO_INIMIGO) < LARG_TELA) {
-		i->x += PASSO_INIMIGO ;
-	}	
-}
-void inimigo_cima(struct inimigo_t *i) {
-	if ((i->y - PASSO_INIMIGO) > 0) {
-		i->y -= PASSO_INIMIGO ;
-	}	
-}
-void inimigo_baixo(struct inimigo_t *i) {
-	if ((i->y + PASSO_INIMIGO) < ALT_TELA) {
-		i->y += PASSO_INIMIGO ;
-	}	
+
+void inimigo_perde_vida(struct inimigo_t *i) {
+	i->vida-- ;
+	i->pisca = 1 ;
 }
 
 // Inimigo dispara projétil
@@ -61,14 +74,20 @@ void inimigo_atira(struct inimigo_t *i) {
 
 // libera memoria do inimigo
 void destroi_inimigo(struct inimigo_t *i) {
+	/* Destroi a lista de balas e arma
+	aux = l->ini ;
+	while (aux != NULL) {
+		l->ini = l->ini->prox ;
+		destroi_inimigo(aux) ;
+		aux = l->ini ;
+	}*/
 	free(i) ;
+	
 }
 
 // Destroi toda memória alocada da lista de inimigos
 void destroi_lista(struct lista_t *l) {
 	struct inimigo_t *aux ;
-	
-	destroi_arma(l->ini->arma) ;
 	
 	aux = l->ini ;
 	while (aux != NULL) {

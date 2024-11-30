@@ -3,14 +3,15 @@
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
 
 #include <stdlib.h> 
 #include <stdio.h> 
 
-//#include "player.h"
-//#include "inimigos.h"
 #include "utili.h"
 #include "colisao.h"
+
+#define TEMPO_CONGELADO 90
 
 void nasce_inimigo (struct lista_t *l, ALLEGRO_COLOR cor) {
 				
@@ -21,15 +22,15 @@ void nasce_inimigo (struct lista_t *l, ALLEGRO_COLOR cor) {
 	al_draw_filled_rectangle(l->ini->x, l->ini->y, l->ini->x + LADO_INIMIGO, l->ini->y + LADO_INIMIGO, cor) ;
 }
 
-// Verifica cada inimigo se saiu da tela, se sim o destroi
+// Verifica cada inimigo se saiu da tela ou morreu, se sim o destroi
 void verifica_inimigos (struct lista_t *l) {
 	struct inimigo_t *ant ;
 	struct inimigo_t *aux ;
 	
 	ant = NULL ;
 	for (struct inimigo_t *atual = l->ini; atual != NULL;) {	
-		// Verifica se o inimigo saiu da tela
-		if (atual->x < 0) {
+		// Verifica se o inimigo saiu da tela ou morreu
+		if (atual->x < 0 || !atual->vida) {
 			// Caso seja o primeiro inimigo da lista
 			if (!ant) {
 				// Aponta para o proximo e destroi o inimigo atual
@@ -56,35 +57,37 @@ void atualiza_balas_inimigas (struct lista_t *l) {
 	// Percorre cada inimigo
 	for (struct inimigo_t *i = l->ini; i != NULL; i = i->prox) {	
 		ant = NULL ;
-		// Percorre por cada bala
-		for (struct bala_t *atual = i->arma->bala; atual != NULL;) {
-			// Atualiza posição da bala
-			atual->x -= MOVIMENTO_BALA ;
-			
-			// Verifica se o tiro saiu da tela
-			if (atual->x < 0) {
-				// Caso seja o primeiro tiro da lista
-				if (!ant) {
-					// Aponta para o proximo e destroi a bala atual
-					i->arma->bala = (struct bala_t*) atual->prox ;
-					atual = i->arma->bala ;
-				} else {
-					// Aponta para o proximo e destroi a bala atual
-					ant->prox = atual->prox ;
-					atual = ant->prox ;
-				}
-				destroi_bala(atual) ;
+		if (i->vida > 0) {	
+			// Percorre por cada bala
+			for (struct bala_t *atual = i->arma->bala; atual != NULL;) {
+				// Atualiza posição da bala
+				atual->x -= MOVIMENTO_BALA ;
 				
-			} else {
-				ant = atual ;
-				atual = (struct bala_t*)atual->prox ;
+				// Verifica se o tiro saiu da tela 
+				if (atual->x < 0) {
+					// Caso seja o primeiro tiro da lista
+					if (!ant) {
+						// Aponta para o proximo e destroi a bala atual
+						i->arma->bala = (struct bala_t*) atual->prox ;
+						atual = i->arma->bala ;
+					} else {
+						// Aponta para o proximo e destroi a bala atual
+						ant->prox = atual->prox ;
+						atual = ant->prox ;
+					}
+					destroi_bala(atual) ;
+					
+				} else {
+					ant = atual ;
+					atual = (struct bala_t*)atual->prox ;
+				}
+			
 			}
-		
-		}
+		}	
 	}	
 }
 
-// Atualiza posição dos tiros em tela e os destroi se precisar
+// Atualiza posição dos tiros do jogador em tela e os destroi se precisar
 void atualiza_balas (struct jogador_t *p) {
 	struct bala_t *ant ;
 	
@@ -94,8 +97,8 @@ void atualiza_balas (struct jogador_t *p) {
 		// Atualiza posição da bala
 		atual->x += MOVIMENTO_BALA ;
 		
-		// Verifica se o tiro saiu da tela
-		if (atual->x > LARG_TELA) {
+		// Verifica se o tiro saiu da tela ou acertou um inimigo
+		if (atual->x > LARG_TELA || atual->acertou) {
 			// Caso seja o primeiro tiro da lista
 			if (!ant) {
 				// Aponta para o proximo e destroi a bala atual
@@ -116,40 +119,82 @@ void atualiza_balas (struct jogador_t *p) {
 	}
 }
 
-// Atualiza a posição do jogador e dos tiros disparados
-void atualiza_pos (struct jogador_t *p, struct lista_t *l1, struct lista_t *l2) {
+// Atualiza a posição do jogador e dos tiros disparados, e colisão
+void atualiza_pos (struct jogador_t *p, struct lista_t *l1, struct lista_t *l2, struct powerup_t *power,
+					ALLEGRO_COLOR *cor) {
 	// Verifica cada controle se estiver ativado movimenta jogador
 	if (p->controle->cima) {
 		movimenta_jogador (p, 1, CIMA) ;
 		if (!p->invulnerabilidade) {	
-			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)) {
+			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)
+				|| colisao_player_bala(p, l1)) {
 				jogador_perde_vida(p) ; 
 			}	
 		}		
+		if (colisao_player_powerup(p, *power)) { 
+			switch (power->tipo) {
+				case GELO:
+					power->coletado = 1 ;
+					p->gelo_timer = GELO_COOLDOWN ;
+					*cor = al_map_rgb(160, 32, 240) ;
+					break ;
+			}
+		}	
 	}
 	if (p->controle->baixo) {
 		movimenta_jogador (p, 1, BAIXO) ;
 		if (!p->invulnerabilidade) {		
-			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)) {
+			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)
+				|| colisao_player_bala(p, l1)) {
 				jogador_perde_vida(p) ; 
 			}	
+		}
+		if (colisao_player_powerup(p, *power)) {
+			switch (power->tipo) {
+				case GELO:
+					power->coletado = 1 ;
+					p->gelo_timer = GELO_COOLDOWN ;
+					*cor = al_map_rgb(160, 32, 240) ;
+					break ;
+			}
 		}	
 	}	
 	if (p->controle->dir) {
 		movimenta_jogador (p, 1, DIREITA) ;
 		if (!p->invulnerabilidade) {	
-			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)) {
+			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)
+				|| colisao_player_bala(p, l1)) {
 				jogador_perde_vida(p) ;
 			}	
+		}
+		if (colisao_player_powerup(p, *power)) {
+			switch (power->tipo) {
+				case GELO:
+					power->coletado = 1 ;
+					p->gelo_timer = GELO_COOLDOWN ;
+					*cor = al_map_rgb(160, 32, 240) ;
+					break ;
+			}
 		}	
 	}	
 	if (p->controle->esq) {
 		movimenta_jogador (p, 1, ESQUERDA) ;
 		if (!p->invulnerabilidade) {		
-			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)) {
+			if (colisao_player_inimigo(p, l1) || colisao_player_inimigo(p, l2)
+				|| colisao_player_bala(p, l1)) { 
 				jogador_perde_vida(p) ;
 			}	
-		}		
+		}	
+		
+		if (colisao_player_powerup(p, *power)) {
+			switch (power->tipo) {
+				case GELO:
+					power->coletado = 1 ;
+					p->gelo_timer = GELO_COOLDOWN ;
+					*cor = al_map_rgb(160, 32, 240) ;
+					break ;
+			}		
+		}
 	}		
 	// Só atira se o cooldown estiver zerado
 	if (p->controle->tiro && !p->arma->timer) {
@@ -166,34 +211,104 @@ void desenha_vida(struct jogador_t *p, ALLEGRO_COLOR vermelho) {
 		al_draw_filled_rectangle(0+40, (ALT_TELA - 20)-10, 40+20, ALT_TELA-10, vermelho) ;
 		al_draw_filled_rectangle(0+70, (ALT_TELA - 20)-10, 70+20, ALT_TELA-10, vermelho) ;
 	} else if (p->vida == 2 ) {
-		al_draw_filled_rectangle(0+10, (ALT_TELA - 20)-10, 20+10, ALT_TELA-10, vermelho) ;
-		al_draw_filled_rectangle(0+20, (ALT_TELA - 20)-10, 20+30, ALT_TELA-10, vermelho) ;
+		al_draw_filled_rectangle(0+10, (ALT_TELA - 20)-10, 10+20, ALT_TELA-10, vermelho) ;
+		al_draw_filled_rectangle(0+40, (ALT_TELA - 20)-10, 40+20, ALT_TELA-10, vermelho) ;
 	} else if (p->vida == 1) {
 		al_draw_filled_rectangle(0+10, (ALT_TELA - 20)-10, 20+10, ALT_TELA-10, vermelho) ;
 	}
 }
 
+// Desenha e movimenta todos inimigos na tela que podem disparar balas
+void atualiza_pos_inimigo_atira (struct lista_t *l_atira, struct lista_t *l, struct jogador_t *p, ALLEGRO_COLOR verde) {
+	for (struct inimigo_t *inimigo = l_atira->ini; inimigo != NULL; inimigo = inimigo->prox) {				
+		movimenta_inimigo (inimigo, 1, ESQUERDA) ;
+		if (colisao_inimigo_bala(p, inimigo)) {
+			inimigo_perde_vida(inimigo) ;
+		} 
+		//if (colisao_inimigo_inimigo(inimigo, l)) {
+		//	movimenta_inimigo (inimigo, -1, ESQUERDA) ;
+		//}
+				
+		// Chance de 50% do inimigo se movimentar para cima, baixo ou direita 
+		if (!inimigo->move_timer) { 
+			int a = 3 % aleat(2, 4) ;
+			if (a == 0) {
+				movimenta_inimigo (inimigo, 1, CIMA) ;
+				if (colisao_inimigo_bala(p, inimigo)) {
+					inimigo_perde_vida(inimigo) ;
+				}
+				//if (colisao_inimigo_inimigo(inimigo, l)) {
+				//	movimenta_inimigo (inimigo, -1, ESQUERDA) ;
+				//}
+				// colisao_player_inimigo(player, l_atira) ;
+			} else if (a == 1) {
+				movimenta_inimigo (inimigo, 1, BAIXO) ;
+				if (colisao_inimigo_bala(p, inimigo)) {
+					inimigo_perde_vida(inimigo) ;
+				}
+				//if (colisao_inimigo_inimigo(inimigo, l)) {
+				//	movimenta_inimigo (inimigo, -1, ESQUERDA) ;
+				//}
+				// colisao_player_inimigo(player, l_atira) ;
+			} else {
+				movimenta_inimigo (inimigo, 1, DIREITA) ;
+				if (colisao_inimigo_bala(p, inimigo)) {
+					inimigo_perde_vida(inimigo) ;
+				}
+				//if (colisao_inimigo_inimigo(inimigo, l)) {
+				//	movimenta_inimigo (inimigo, -1, ESQUERDA) ;
+				//}
+				 //colisao_player_inimigo(player, l_atira) ;
+			}
+			
+			inimigo->move_timer = COOLDOWN_MOVE ;
+		} 
+		inimigo->move_timer-- ;		
+				
+		if (!inimigo->arma->timer) {
+			inimigo_atira(inimigo) ;
+			inimigo->arma->timer = INIMIGO_ARMA_COOLDOWN ;
+		}
+		if (inimigo->arma->timer) {
+			inimigo->arma->timer-- ;
+		}
+		// Desenha inimigo
+		if (inimigo->vida > 0) {
+			if (!inimigo->pisca) {
+				al_draw_filled_rectangle(inimigo->x, inimigo->y, inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, verde) ;
+			} else {
+				inimigo->pisca = 0 ;
+			}					
+		}	
+	} 
+}
+
 int main() {
 	ALLEGRO_DISPLAY *janela ;
-	ALLEGRO_COLOR azul, vermelho, verde ;
+	ALLEGRO_COLOR azul, vermelho, verde, roxo, azul_escuro, laranja ;
 	ALLEGRO_EVENT_QUEUE *fila_de_eventos ;
 	ALLEGRO_EVENT eventos ;
 	ALLEGRO_TIMER *tempo ;
 	struct jogador_t *player ;
 	struct lista_t *l_atira ;
 	struct lista_t *l ;
+	struct powerup_t power ;
 	
 	srand(0) ;
 	
 	// Inicializa váriaveis de cor
 	azul = al_map_rgb(0, 0, 255) ;
+	azul_escuro = al_map_rgb(0, 0, 139) ;
 	vermelho = al_map_rgb(255, 0, 0) ;
 	verde = al_map_rgb(0, 255, 0) ;
+	roxo = al_map_rgb(160, 32, 240) ;
+	laranja = al_map_rgb(255, 165, 0) ;
 	
 	// Inicializa e instala tudo que será utilizado no programa
 	al_init() ;
 	al_init_primitives_addon() ;
 	al_install_keyboard() ;
+	al_init_image_addon() ;
 		
 	// Cria e inicializa a janela
 	janela = al_create_display(LARG_TELA, ALT_TELA) ;
@@ -212,7 +327,9 @@ int main() {
 	
 	player = cria_jogador (LADO_QUADRADO, LADO_QUADRADO) ;
 	
-	l = cria_lista_inimigos() ;	
+	power = cria_powerup (LARG_TELA-LADO_POWERUP, ALT_TELA-LADO_POWERUP, GELO) ;
+	
+	l = cria_lista_inimigos(LARG_TELA-LADO_POWERUP, aleat(0, ALT_TELA-LADO_POWERUP), GELO) ;	
 	l_atira = cria_lista_inimigos() ;	
 	
 	al_start_timer(tempo) ;		
@@ -226,16 +343,35 @@ int main() {
 		// Evento que atualiza a tela
 		if (eventos.type == ALLEGRO_EVENT_TIMER) {
 			al_clear_to_color(al_map_rgb(0, 0, 0)) ;
+						
+			// Verifica morte 
+			if (!player->vida) break ;
+				
+			if (!power.powerup_timer) {
+				// Cria powerup
+				power = cria_powerup (LARG_TELA-LADO_POWERUP, aleat(0, ALT_TELA-LADO_POWERUP), GELO) ;
+			} else {
+				power.powerup_timer-- ;
+			}
+			//printf("%d\n",power.coletado) ;
+			if (!power.coletado) {
+				// Powerup sempre se locomove para a esquerda
+				movimenta_powerup (&power, 1, ESQUERDA) ;
+				// Desenha powerup
+				al_draw_filled_rectangle(power.x, power.y, power.x + power.larg_power, power.y + power.alt_power, laranja) ;
+			}
+			if (!player->gelo_timer) {
+				azul = al_map_rgb(0, 0, 255) ;
+			}
 			
-			// Desenha coração na tela
-			desenha_vida(player, vermelho) ;
-			
-			// Verifica os inimigos que possam ter saído da tela
+			// Verifica os inimigos que possam ter saído da tela ou morrido
 			verifica_inimigos(l_atira) ;
 			verifica_inimigos(l) ;
 			
+			// Inimigo spawna caso não esteja em cooldown
 			if (!l->timer) {
 				nasce_inimigo(l, vermelho) ;
+				// Verifica se inimigos não nasceram no mesmo lugar
 				l->timer = INIMIGO_COOLDOWN_1 ;
 			} else if (l_atira->timer <= 0) {
 				nasce_inimigo(l_atira, verde) ;
@@ -246,41 +382,52 @@ int main() {
 			
 			// Desenha todos inimigos na tela que apenas se movimentam
 			for (struct inimigo_t *inimigo = l->ini; inimigo != NULL; inimigo = inimigo->prox) {
-				// Este inimigo se move apenas para a esquerda
-				inimigo_esquerda(inimigo) ;
-				//colisao_inimigo_inimigo() ;
+				if (!inimigo->congelado) {	
+					movimenta_inimigo (inimigo, 1, ESQUERDA) ;
+				}
+					
+				if ((player->gelo_timer > 0) && (colisao_inimigo_bala(player, inimigo) == 2)) {
+					inimigo_perde_vida(inimigo) ;
+					//printf ("%d\n",inimigo->vida) ;
+					if (!inimigo->congelado) {	
+						inimigo->congelado++ ;
+					}	
+				} else if (colisao_inimigo_bala(player, inimigo) == 1) {
+					inimigo_perde_vida(inimigo) ;
+					printf ("%d\n",inimigo->vida) ;
+				}
 				
-				al_draw_filled_rectangle(inimigo->x, inimigo->y, inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, vermelho) ;
-			}
+				// Colocar em função verifica_congelado
+				if (inimigo->congelado == TEMPO_CONGELADO) {
+					inimigo->congelado = 0 ;
+				} else if (inimigo->congelado > 0) {
+					inimigo->congelado++ ;
+				}
 				
-			// Desenha e movimenta todos inimigos na tela que podem disparar balas
-			for (struct inimigo_t *inimigo = l_atira->ini; inimigo != NULL; inimigo = inimigo->prox) {				
-				inimigo_esquerda(inimigo) ;	
-				// colisao_player_inimigo(struct jogador_t *p, struct lista_t *l) ;
+				//	if (colisao_inimigo_inimigo(inimigo, l)) {
+						// Movimenta inimigo na direção contrária
+				//		movimenta_inimigo (inimigo, -1, ESQUERDA) ;
+				//	}	
+				// Desenho o inimigo caso esteja vivo, e o faz piscar caso leve dano
 				
-				// Chance de 50% do inimigo se movimentar para cima, baixo ou direita
-				if (!inimigo->move_timer) {
-					int a = 3 % aleat(2, 4) ;
-					if (a == 0) {
-						inimigo_cima(inimigo) ;
-					} else if (a == 1) {
-						inimigo_baixo(inimigo) ;
+				if (inimigo->vida > 0) {
+					if (!inimigo->pisca) {	
+						if (!inimigo->congelado) {		
+							al_draw_filled_rectangle(inimigo->x, inimigo->y, 
+														inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, vermelho) ;
+						} else {
+							//printf ("%d\n",inimigo->vida) ;
+							al_draw_filled_rectangle(inimigo->x, inimigo->y, 
+														inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, azul_escuro) ;
+						}								
 					} else {
-						inimigo_direita(inimigo) ;
-					}
-					inimigo->move_timer = COOLDOWN_MOVE ;
-				}
-				inimigo->move_timer-- ;
-				
-				if (!inimigo->arma->timer) {
-					inimigo_atira(inimigo) ;
-					inimigo->arma->timer = ARMA_COOLDOWN ;
-				}
-				if (inimigo->arma->timer) {
-					inimigo->arma->timer-- ;
-				}
-				al_draw_filled_rectangle(inimigo->x, inimigo->y, inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, verde) ;				
+						inimigo->pisca = 0 ;
+					}	
+				}	
 			}
+			
+			// Desenha e movimenta todos inimigos na tela que podem disparar balas
+			atualiza_pos_inimigo_atira (l_atira, l, player, verde) ;
 			
 			// Se a lista foi inicializada desenha cada bala de cada inimigo	
 			if (l_atira->ini != NULL) {
@@ -294,15 +441,27 @@ int main() {
 				}	
 			}
 
-			atualiza_pos(player, l_atira, l) ;
-			// Soma Lado do quadrado para que o quadrado se movimente+seu proprio lado, desenha o player
-			al_draw_filled_rectangle(player->x, player->y, player->x+LADO_QUADRADO, player->y+LADO_QUADRADO, azul) ;
-			// Desenha os tiros do player na tela
-			for (struct bala_t *b = player->arma->bala; b != NULL; b = b->prox) {
-				al_draw_filled_circle(b->x, b->y, 4, azul) ;
+			atualiza_pos(player, l_atira, l, &power, &azul) ;
+			// Desenha coração na tela
+			desenha_vida(player, vermelho) ;
+			if (player->invulnerabilidade != 0) {	
+				player->invulnerabilidade-- ;
 			}
 			if (player->arma->timer) {
 				player->arma->timer-- ;
+			}
+			if (player->gelo_timer) {
+				player->gelo_timer-- ;
+			}
+			// Player pisca caso esteja invulneravel
+			if (!player->invulnerabilidade || ((player->invulnerabilidade % 2) == 0)) {
+				// Soma Lado do quadrado para que o quadrado se movimente+seu proprio lado, desenha o player
+				al_draw_filled_rectangle(player->x, player->y, player->x+LADO_QUADRADO, player->y+LADO_QUADRADO, azul) ;
+			}
+
+			// Desenha os tiros do player na tela
+			for (struct bala_t *b = player->arma->bala; b != NULL; b = b->prox) {
+				al_draw_filled_circle(b->x, b->y, 4, azul) ;
 			}
 			
 			// Atualiza a tela
@@ -344,7 +503,7 @@ int main() {
 					break;	
 				case ALLEGRO_KEY_X:	
 					player->controle->tiro = 0;
-					break;		
+					break;			
 			}	 
 		}
 	}	
