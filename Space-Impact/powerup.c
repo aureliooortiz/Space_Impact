@@ -7,8 +7,8 @@ struct powerup_t cria_powerup (int x, int y, int tipo) {
 	p.y = y ;
 	p.tipo = tipo ;
 	p.coletado = 0 ;
-	p.larg_power = LADO_POWERUP ;
-	p.alt_power = LADO_POWERUP ;
+	p.larg_power = LARG_POWERUP ;
+	p.alt_power = ALT_POWERUP ;
 	p.powerup_timer = POWERUP_COOLDOWN ;
 	
 	return p ;
@@ -33,7 +33,7 @@ void movimenta_powerup (struct powerup_t *p, int passo, int trajetoria) {
 			break ;		
 		case ESQUERDA:
 			// Não atualiza a posição do powerup se o mesmo já saiu da tela
-			if ((p->x - PASSO_POWERUP) > -LADO_POWERUP) {
+			if ((p->x - PASSO_POWERUP) > -LARG_POWERUP) {
 				p->x -= passo*PASSO_POWERUP ;
 			}	
 			break ;	

@@ -13,6 +13,8 @@ struct jogador_t *cria_jogador (int x, int y) {
 	p->arma = cria_arma() ;
 	p->x = x ;
 	p->y = y ;
+	p->larg = LARG_NAVE ;
+	p->alt = ALT_NAVE ;
 	p->gelo_timer = 0 ;  
 	// Vida máxima do jogador
 	p->vida = 3 ;
@@ -51,7 +53,7 @@ void jogador_atira (struct jogador_t *p) {
 	struct bala_t *tiro ;
 	
 	// Tiro sempre parte de um deslocamento fixo à direita do centro, saindo do meio
-	tiro = tiro_de_arma(p->x + LADO_QUADRADO/2, p->y + LADO_QUADRADO/2, p->arma) ;
+	tiro = tiro_de_arma(p->x + p->larg/2, p->y + p->alt/2, p->arma) ;
 	
 	// Se o timer estiver ativo signifca que o player pegou o tiro congelante
 	if (p->gelo_timer) {

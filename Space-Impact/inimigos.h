@@ -1,7 +1,9 @@
 #ifndef __INIMIGOS_H__
 #define __INIMIGOS_H__
 
-#define LADO_INIMIGO 50
+//#define LADO_INIMIGO 50
+#define LARG_INIMIGO 50 
+#define ALT_INIMIGO 50
 
 // Velocidade que anda o inimigo
 #define PASSO_INIMIGO 7
@@ -20,6 +22,8 @@ struct lista_t {
 struct inimigo_t {
 	int x ;
 	int y ;
+	int alt ;
+	int larg ;
 	int congelado ;
 	// Cooldown para o inimigo se mover a uma direção aleatoria
 	int move_timer ;

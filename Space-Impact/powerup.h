@@ -10,7 +10,9 @@
 #define GELO_COOLDOWN 500
 
 #define POWERUP_COOLDOWN 800
-#define LADO_POWERUP 30
+//#define LADO_POWERUP 30
+#define LARG_POWERUP 30
+#define ALT_POWERUP 30
 
 #define PASSO_POWERUP 7
 

@@ -12,6 +12,8 @@ struct inimigo_t *cria_inimigo(int x, int y, struct inimigo_t *n) {
 	i = (struct inimigo_t*)malloc(sizeof(struct inimigo_t)) ;
 	i->x = x ;
 	i->y = y ;
+	i->alt = ALT_INIMIGO ;
+	i->larg = LARG_INIMIGO ;
 	i->move_timer = 0 ;
 	i->vida = 30 ;
 	i->pisca = 0 ;
@@ -67,7 +69,7 @@ void inimigo_atira(struct inimigo_t *i) {
 	struct bala_t *tiro ;
 	
 	// Tiro sempre parte de um deslocamento fixo à direita do centro, saindo do meio
-	tiro = tiro_de_arma(i->x + LADO_INIMIGO/2, i->y + LADO_INIMIGO/2, i->arma) ;
+	tiro = tiro_de_arma(i->x + i->larg/2, i->y + i->alt/2, i->arma) ;
 	
 	i->arma->bala = tiro ;
 }	

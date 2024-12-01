@@ -11,15 +11,13 @@
 #include "utili.h"
 #include "colisao.h"
 
-#define TEMPO_CONGELADO 90
-
 void nasce_inimigo (struct lista_t *l, ALLEGRO_COLOR cor) {
 				
 	// Inimigo nasce no lado esquerdo da tela em um y aleatório
-	l->ini = cria_inimigo(LARG_TELA - LADO_INIMIGO, aleat(0, ALT_TELA-LADO_INIMIGO) , l->ini) ;
+	l->ini = cria_inimigo(LARG_TELA - LARG_INIMIGO, aleat(0, ALT_TELA-ALT_INIMIGO) , l->ini) ;
 				
 	// Desenha primeira "aparição" do inimigo em tela, ele nasce
-	al_draw_filled_rectangle(l->ini->x, l->ini->y, l->ini->x + LADO_INIMIGO, l->ini->y + LADO_INIMIGO, cor) ;
+	al_draw_filled_rectangle(l->ini->x, l->ini->y, l->ini->x + l->ini->larg, l->ini->y + l->ini->alt, cor) ;
 }
 
 // Verifica cada inimigo se saiu da tela ou morreu, se sim o destroi
@@ -275,12 +273,47 @@ void atualiza_pos_inimigo_atira (struct lista_t *l_atira, struct lista_t *l, str
 		// Desenha inimigo
 		if (inimigo->vida > 0) {
 			if (!inimigo->pisca) {
-				al_draw_filled_rectangle(inimigo->x, inimigo->y, inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, verde) ;
+				al_draw_filled_rectangle(inimigo->x, inimigo->y, inimigo->x + inimigo->larg, inimigo->y + inimigo->alt, verde) ;
 			} else {
 				inimigo->pisca = 0 ;
 			}					
 		}	
 	} 
+}
+
+/*
+#define FRAME_WIDTH 32   // Largura de um quadro no sprite
+#define FRAME_HEIGHT 32  // Altura de um quadro no sprite
+#define NUM_FRAMES 3     // Número de quadros por linha (animação)
+#define ANIMATION_SPEED 5  // Velocidade da animação (maior é mais lento)
+
+// Função para desenhar a animação do jogador
+void desenha_jogador(ALLEGRO_BITMAP *player_spr, int x, int y, int direcao, int frame_atual) {
+    int src_x = frame_atual * FRAME_WIDTH;   // Calcula a coluna do quadro
+    int src_y = direcao * FRAME_HEIGHT;     // Calcula a linha com base na direção
+    
+    al_draw_bitmap_region(player_spr, src_x, src_y, FRAME_WIDTH, FRAME_HEIGHT, x, y, 0);
+}*/
+
+// Atualiza o quadro atual da animação
+void atualiza_animacao(int *direcao, int *lin, int *col, int *timer) {
+	switch (*direcao) {
+		case CIMA:
+			*lin = 2 ;
+			*col = 0 ;
+			*timer = 7 ;
+			break ;
+		case BAIXO:
+			*lin = 2 ;
+			*col = 0 ;
+			*timer = 7 ;
+			break ;	
+		default:
+			*lin = 2 ;
+			*col = 0 ;
+			break ;
+	}
+
 }
 
 int main() {
@@ -289,10 +322,15 @@ int main() {
 	ALLEGRO_EVENT_QUEUE *fila_de_eventos ;
 	ALLEGRO_EVENT eventos ;
 	ALLEGRO_TIMER *tempo ;
+	ALLEGRO_BITMAP *player_spr ;
 	struct jogador_t *player ;
 	struct lista_t *l_atira ;
 	struct lista_t *l ;
 	struct powerup_t power ;
+	float larg_spr, alt_spr ;
+	int direcao = ESQUERDA ;   
+	int ind_col, ind_lin ; // indice de coluna e linha em spritesheet   
+	int anim_timer = 0 ;
 	
 	srand(0) ;
 	
@@ -312,7 +350,7 @@ int main() {
 		
 	// Cria e inicializa a janela
 	janela = al_create_display(LARG_TELA, ALT_TELA) ;
-	al_set_window_position(janela, POS_TELA+100, POS_TELA) ;
+	al_set_window_position(janela, POS_TELA, POS_TELA) ;
 	al_set_window_title(janela, NOME_TELA) ;
 	//al_set_new_display_flags(ALLEGRO_RESIZABLE) ;
 	
@@ -325,11 +363,16 @@ int main() {
 	al_register_event_source(fila_de_eventos, al_get_timer_event_source(tempo)) ;
 	al_register_event_source(fila_de_eventos, al_get_display_event_source(janela));
 	
-	player = cria_jogador (LADO_QUADRADO, LADO_QUADRADO) ;
+	player = cria_jogador(0, 0) ;
+	player_spr = al_load_bitmap("assets/ship.png") ;
+	larg_spr = al_get_bitmap_width(player_spr) / 2 ;
+	alt_spr = al_get_bitmap_height(player_spr) / 5 ;
+	ind_lin = 2 ;
+	ind_col = 0 ;
 	
-	power = cria_powerup (LARG_TELA-LADO_POWERUP, ALT_TELA-LADO_POWERUP, GELO) ;
+	power = cria_powerup(LARG_TELA-LARG_POWERUP, ALT_TELA-ALT_POWERUP, GELO) ;
 	
-	l = cria_lista_inimigos(LARG_TELA-LADO_POWERUP, aleat(0, ALT_TELA-LADO_POWERUP), GELO) ;	
+	l = cria_lista_inimigos() ;	
 	l_atira = cria_lista_inimigos() ;	
 	
 	al_start_timer(tempo) ;		
@@ -349,7 +392,7 @@ int main() {
 				
 			if (!power.powerup_timer) {
 				// Cria powerup
-				power = cria_powerup (LARG_TELA-LADO_POWERUP, aleat(0, ALT_TELA-LADO_POWERUP), GELO) ;
+				power = cria_powerup (LARG_TELA-LARG_POWERUP, aleat(0, ALT_TELA-ALT_POWERUP), GELO) ;
 			} else {
 				power.powerup_timer-- ;
 			}
@@ -388,13 +431,11 @@ int main() {
 					
 				if ((player->gelo_timer > 0) && (colisao_inimigo_bala(player, inimigo) == 2)) {
 					inimigo_perde_vida(inimigo) ;
-					//printf ("%d\n",inimigo->vida) ;
 					if (!inimigo->congelado) {	
 						inimigo->congelado++ ;
 					}	
 				} else if (colisao_inimigo_bala(player, inimigo) == 1) {
 					inimigo_perde_vida(inimigo) ;
-					printf ("%d\n",inimigo->vida) ;
 				}
 				
 				// Colocar em função verifica_congelado
@@ -414,11 +455,11 @@ int main() {
 					if (!inimigo->pisca) {	
 						if (!inimigo->congelado) {		
 							al_draw_filled_rectangle(inimigo->x, inimigo->y, 
-														inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, vermelho) ;
+														inimigo->x + inimigo->larg, inimigo->y + inimigo->alt, vermelho) ;
 						} else {
 							//printf ("%d\n",inimigo->vida) ;
 							al_draw_filled_rectangle(inimigo->x, inimigo->y, 
-														inimigo->x + LADO_INIMIGO, inimigo->y + LADO_INIMIGO, azul_escuro) ;
+														inimigo->x + inimigo->larg, inimigo->y + inimigo->alt, azul_escuro) ;
 						}								
 					} else {
 						inimigo->pisca = 0 ;
@@ -453,10 +494,18 @@ int main() {
 			if (player->gelo_timer) {
 				player->gelo_timer-- ;
 			}
+			
+			// Atualiza a animação
+			if (!anim_timer) {
+				atualiza_animacao(&direcao, &ind_lin, &ind_col, &anim_timer) ;
+			} else if (anim_timer > 0) {
+				anim_timer-- ;
+			}
 			// Player pisca caso esteja invulneravel
 			if (!player->invulnerabilidade || ((player->invulnerabilidade % 2) == 0)) {
-				// Soma Lado do quadrado para que o quadrado se movimente+seu proprio lado, desenha o player
-				al_draw_filled_rectangle(player->x, player->y, player->x+LADO_QUADRADO, player->y+LADO_QUADRADO, azul) ;
+				// Desenha o jogador com a animação
+				al_draw_bitmap_region(player_spr, ind_col, ind_lin * alt_spr, 
+									larg_spr, alt_spr, player->x, player->y, 0) ;
 			}
 
 			// Desenha os tiros do player na tela
@@ -471,15 +520,19 @@ int main() {
 			switch (eventos.keyboard.keycode) {	
 				case ALLEGRO_KEY_DOWN:
 					controle_baixo(player->controle) ;
+					direcao = BAIXO ;
 					break ;	
 				case ALLEGRO_KEY_UP:	
 					controle_cima(player->controle) ;
+					direcao = CIMA ;
 					break ;
 				case ALLEGRO_KEY_RIGHT:	
-					controle_direita(player->controle) ;		
+					controle_direita(player->controle) ;	
+					direcao = DIREITA ;
 					break ;
 				case ALLEGRO_KEY_LEFT:	
 					controle_esquerda(player->controle) ;
+					direcao = ESQUERDA ;
 					break ;
 				case ALLEGRO_KEY_X:	
 					controle_tiro(player->controle) ;

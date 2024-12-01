@@ -3,7 +3,7 @@
 
 // Definições da janela
 #define ALT_TELA 800
-#define LARG_TELA 1280
+#define LARG_TELA 1400
 #define POS_TELA 0
 #define NOME_TELA "Space Impact"
 

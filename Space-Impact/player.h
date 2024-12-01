@@ -16,7 +16,10 @@
 // Velocidade do andar do jogador
 #define PASSO_QUADRADO 7
 
-#define LADO_QUADRADO 50
+//#define LADO_QUADRADO 50
+#define LARG_NAVE 27
+#define ALT_NAVE 17
+
 
 struct jogador_t {
 	struct controle_t *controle ;
@@ -24,6 +27,8 @@ struct jogador_t {
 	// Posição atual do jogador
 	int x ;
 	int y ;
+	int larg ;
+	int alt ;
 	int vida ;
 	int invulnerabilidade ;
 	int gelo_timer ;
