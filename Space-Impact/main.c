@@ -217,7 +217,7 @@ void desenha_vida(struct jogador_t *p, ALLEGRO_COLOR vermelho) {
 }
 
 // Desenha e movimenta todos inimigos na tela que podem disparar balas
-void atualiza_pos_inimigo_atira (struct lista_t *l_atira, struct lista_t *l, struct jogador_t *p, ALLEGRO_COLOR verde) {
+void atualiza_pos_inimigo_atira (struct lista_t *l_atira/*, struct lista_t *l,*/, struct jogador_t *p, ALLEGRO_COLOR verde) {
 	for (struct inimigo_t *inimigo = l_atira->ini; inimigo != NULL; inimigo = inimigo->prox) {				
 		movimenta_inimigo (inimigo, 1, ESQUERDA) ;
 		if (colisao_inimigo_bala(p, inimigo)) {
@@ -281,44 +281,9 @@ void atualiza_pos_inimigo_atira (struct lista_t *l_atira, struct lista_t *l, str
 	} 
 }
 
-/*
-#define FRAME_WIDTH 32   // Largura de um quadro no sprite
-#define FRAME_HEIGHT 32  // Altura de um quadro no sprite
-#define NUM_FRAMES 3     // Número de quadros por linha (animação)
-#define ANIMATION_SPEED 5  // Velocidade da animação (maior é mais lento)
-
-// Função para desenhar a animação do jogador
-void desenha_jogador(ALLEGRO_BITMAP *player_spr, int x, int y, int direcao, int frame_atual) {
-    int src_x = frame_atual * FRAME_WIDTH;   // Calcula a coluna do quadro
-    int src_y = direcao * FRAME_HEIGHT;     // Calcula a linha com base na direção
-    
-    al_draw_bitmap_region(player_spr, src_x, src_y, FRAME_WIDTH, FRAME_HEIGHT, x, y, 0);
-}*/
-
-// Atualiza o quadro atual da animação
-void atualiza_animacao(int *direcao, int *lin, int *col, int *timer) {
-	switch (*direcao) {
-		case CIMA:
-			*lin = 2 ;
-			*col = 0 ;
-			*timer = 7 ;
-			break ;
-		case BAIXO:
-			*lin = 2 ;
-			*col = 0 ;
-			*timer = 7 ;
-			break ;	
-		default:
-			*lin = 2 ;
-			*col = 0 ;
-			break ;
-	}
-
-}
-
 int main() {
 	ALLEGRO_DISPLAY *janela ;
-	ALLEGRO_COLOR azul, vermelho, verde, roxo, azul_escuro, laranja ;
+	ALLEGRO_COLOR azul, vermelho, verde, azul_escuro, laranja ;
 	ALLEGRO_EVENT_QUEUE *fila_de_eventos ;
 	ALLEGRO_EVENT eventos ;
 	ALLEGRO_TIMER *tempo ;
@@ -328,9 +293,7 @@ int main() {
 	struct lista_t *l ;
 	struct powerup_t power ;
 	float larg_spr, alt_spr ;
-	int direcao = ESQUERDA ;   
 	int ind_col, ind_lin ; // indice de coluna e linha em spritesheet   
-	int anim_timer = 0 ;
 	
 	srand(0) ;
 	
@@ -339,7 +302,7 @@ int main() {
 	azul_escuro = al_map_rgb(0, 0, 139) ;
 	vermelho = al_map_rgb(255, 0, 0) ;
 	verde = al_map_rgb(0, 255, 0) ;
-	roxo = al_map_rgb(160, 32, 240) ;
+	//roxo = al_map_rgb(160, 32, 240) ;
 	laranja = al_map_rgb(255, 165, 0) ;
 	
 	// Inicializa e instala tudo que será utilizado no programa
@@ -468,7 +431,7 @@ int main() {
 			}
 			
 			// Desenha e movimenta todos inimigos na tela que podem disparar balas
-			atualiza_pos_inimigo_atira (l_atira, l, player, verde) ;
+			atualiza_pos_inimigo_atira (l_atira, /*l,*/ player, verde) ;
 			
 			// Se a lista foi inicializada desenha cada bala de cada inimigo	
 			if (l_atira->ini != NULL) {
@@ -494,16 +457,10 @@ int main() {
 			if (player->gelo_timer) {
 				player->gelo_timer-- ;
 			}
-			
-			// Atualiza a animação
-			if (!anim_timer) {
-				atualiza_animacao(&direcao, &ind_lin, &ind_col, &anim_timer) ;
-			} else if (anim_timer > 0) {
-				anim_timer-- ;
-			}
+		
 			// Player pisca caso esteja invulneravel
 			if (!player->invulnerabilidade || ((player->invulnerabilidade % 2) == 0)) {
-				// Desenha o jogador com a animação
+				// Desenha o jogador
 				al_draw_bitmap_region(player_spr, ind_col, ind_lin * alt_spr, 
 									larg_spr, alt_spr, player->x, player->y, 0) ;
 			}
@@ -520,19 +477,15 @@ int main() {
 			switch (eventos.keyboard.keycode) {	
 				case ALLEGRO_KEY_DOWN:
 					controle_baixo(player->controle) ;
-					direcao = BAIXO ;
 					break ;	
 				case ALLEGRO_KEY_UP:	
 					controle_cima(player->controle) ;
-					direcao = CIMA ;
 					break ;
 				case ALLEGRO_KEY_RIGHT:	
 					controle_direita(player->controle) ;	
-					direcao = DIREITA ;
 					break ;
 				case ALLEGRO_KEY_LEFT:	
 					controle_esquerda(player->controle) ;
-					direcao = ESQUERDA ;
 					break ;
 				case ALLEGRO_KEY_X:	
 					controle_tiro(player->controle) ;
