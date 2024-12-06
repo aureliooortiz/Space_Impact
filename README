@@ -1,5 +1,16 @@
 OBSERVAÇÕES:
 
+ATUALIZAÇÕES:
+ Adicionado campos de sprites para o player e para o powerup relacionado ao coração. 
+No entanto isto só está atualizado no main.c, devo atualizar nos módulos de player e 
+também nos módulos de powerup e criar a struct coracao e colocar como um campo de powerup,
+todos os sprites estão sendo inicializados no main.c. 
+ Foram adicionadas diversas funções no main.c que tornam o código mais organizado, porém,
+não foi feita a compilação por conta de não terem sido atualizados os campos de struct, se 
+preparar para erros. 
+ Há a ideia de transformar o power em um ponteiro e alocar memória para o mesmo por padrão e
+por conta de possíveis reajustes futuros no código. 
+
 VERIFICAÇÃO DE DANO:
  O dano é verificado quando o player se move, no entanto isso ocasiona um bug de que
 o player não sofre dano quando o mesmo está parado. Atualmente é feito realizando uma 
