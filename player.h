@@ -1,6 +1,8 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
+#include <allegro5/allegro.h>
+
 #include "controle.h"
 #include "arma.h"
 #include "powerup.h"
@@ -24,6 +26,7 @@
 struct jogador_t {
 	struct controle_t *controle ;
 	struct arma_t *arma ;
+	ALLEGRO_BITMAP *player_spr ;
 	// Posição atual do jogador
 	int x ;
 	int y ;
@@ -32,6 +35,8 @@ struct jogador_t {
 	int vida ;
 	int invulnerabilidade ;
 	int gelo_timer ;
+	float larg_spr_player ;
+	float alt_spr_player ;
 } ;
 
 // Cria e retorna um player

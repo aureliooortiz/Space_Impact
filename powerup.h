@@ -1,6 +1,8 @@
 #ifndef __POWERUP_H__
 #define __POWERUP_H__
 
+#include <allegro5/allegro.h>
+
 #include "player.h"
 #include "bala.h"
 #include "utili.h"
@@ -18,7 +20,14 @@
 
 #define GELO 1
 
+struct coracao_t {
+	ALLEGRO_BITMAP *coracao_spr ;
+	float larg_spr ;
+	float alt_spr ;
+};
+
 struct powerup_t {
+	struct coracao_t *coracao ;
 	int x ;
 	int y ;
 	int tipo ;

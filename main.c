@@ -130,16 +130,16 @@ void atualiza_player (struct jogador_t *p, struct lista_t *l1, struct lista_t *l
 	atualiza_balas (p) ;
 	
 	// Atualiza timers do jogador
-	if (player->invulnerabilidade != 0) {	
-		player->invulnerabilidade-- ;
+	if (p->invulnerabilidade != 0) {	
+		p->invulnerabilidade-- ;
 	}
-	if (player->arma->timer) {
-		player->arma->timer-- ;
+	if (p->arma->timer) {
+		p->arma->timer-- ;
 	}
-	if (player->gelo_timer) {
-		player->gelo_timer-- ;
+	if (p->gelo_timer) {
+		p->gelo_timer-- ;
 	}
-	if (!player->gelo_timer) {
+	if (!p->gelo_timer) {
 		// Tiro volta a cor normal
 		*cor = al_map_rgb(0, 0, 255) ;
 	}
@@ -149,12 +149,12 @@ void desenha_jogador (struct jogador_t *player) {
 	// Player pisca caso esteja invulneravel
 	if (!player->invulnerabilidade || ((player->invulnerabilidade % 2) == 0)) {
 		// Desenha o jogador
-		al_draw_bitmap_region(p->player_spr, 0, 2 * p->alt_spr_player, 
-							p->larg_spr_player, p->alt_spr_player, player->x, player->y, 0) ;
+		al_draw_bitmap_region(player->player_spr, 0, 2 * player->alt_spr_player, 
+								player>larg_spr_player, player->alt_spr_player, player->x, player->y, 0) ;
 	}
 }
 
-void desenha_balas_jogador (struct jogador_t *player, ALLEGRO COLOR azul) {
+void desenha_balas_jogador (struct jogador_t *player, ALLEGRO_COLOR azul) {
 	// Desenha os tiros do player na tela
 	for (struct bala_t *b = player->arma->bala; b != NULL; b = b->prox) {
 		al_draw_filled_circle(b->x, b->y, 4, azul) ;
@@ -163,20 +163,20 @@ void desenha_balas_jogador (struct jogador_t *player, ALLEGRO COLOR azul) {
 
 void desenha_vida(struct jogador_t *p, struct powerup_t power) {
 	if (p->vida == 3) {
-		al_draw_bitmap_region (power.coracao.coracao_spr, 1, 0, power.coracao.larg_spr*3, 
+		al_draw_bitmap_region (power.coracao->coracao_spr, 1, 0, power.coracao->larg_spr*3, 
 								power.coracao.alt_spr, 0, ALT_TELA-power.coracao.alt_spr+10, 0) ;
 	} else if (p->vida == 2 ) {
-		al_draw_bitmap_region (power.coracao.coracao_spr, 1, 0, power.coracao.larg_spr*2-10, 
-								power.coracao.alt_spr, 0, ALT_TELA-power.coracao.alt_spr+10, 0) ;
+		al_draw_bitmap_region (power.coracao->coracao_spr, 1, 0, power.coracao->larg_spr*2-10, 
+								power.coracao->alt_spr, 0, ALT_TELA-power.coracao->alt_spr+10, 0) ;
 	} else if (p->vida == 1) {
 		al_draw_bitmap_region (power.coracao.coracao_spr, 1, 0, power.coracao.larg_spr*2-10, 
-								power.coracao.alt_spr, 0, ALT_TELA-power.coracao.alt_spr+10, 0) ;
+								power.coracao->alt_spr, 0, ALT_TELA-power.coracao->alt_spr+10, 0) ;
 	}
 }
 
 
 // Atualiza informações relacionadas ao powerup
-void atualiza_powerup (struct powerup *power, struct player_t *p) {
+void atualiza_powerup (struct powerup *power) {
 	if (!power.coletado) {
 		// Powerup sempre se locomove para a esquerda
 		movimenta_powerup (power, 1, ESQUERDA) ;
@@ -487,7 +487,7 @@ int main() {
 			// Spawna powerup caso possível
 			nasce_powerup (power) ;
 			// Movimenta powerup e o desenha na tela
-			atualiza_powerup (&power, p) 
+			atualiza_powerup (&power) ;
 			
 			// Verifica os inimigos que possam ter saído da tela ou morrido
 			verifica_inimigos(l_atira) ;

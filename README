@@ -10,7 +10,11 @@ não foi feita a compilação por conta de não terem sido atualizados os campos
 preparar para erros. 
  Há a ideia de transformar o power em um ponteiro e alocar memória para o mesmo por padrão e
 por conta de possíveis reajustes futuros no código. 
-
+ 
+MUDAR POWERUP:
+ Mudar struct do powerup para ter uma struct para cada powerup especifico, e cada uma carregar
+sua posição, altura e largura. Atribuir memória ao powerup também. Consertar erros de compilação.   
+ 
 VERIFICAÇÃO DE DANO:
  O dano é verificado quando o player se move, no entanto isso ocasiona um bug de que
 o player não sofre dano quando o mesmo está parado. Atualmente é feito realizando uma 
