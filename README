@@ -1,15 +1,10 @@
 OBSERVAÇÕES:
 
 ATUALIZAÇÕES:
- Adicionado campos de sprites para o player e para o powerup relacionado ao coração. 
-No entanto isto só está atualizado no main.c, devo atualizar nos módulos de player e 
-também nos módulos de powerup e criar a struct coracao e colocar como um campo de powerup,
-todos os sprites estão sendo inicializados no main.c. 
- Foram adicionadas diversas funções no main.c que tornam o código mais organizado, porém,
-não foi feita a compilação por conta de não terem sido atualizados os campos de struct, se 
-preparar para erros. 
- Há a ideia de transformar o power em um ponteiro e alocar memória para o mesmo por padrão e
-por conta de possíveis reajustes futuros no código. 
+ É preciso arrumar as colisões de tudo, pois agora tudo tem um sprite.
+ Há diversos comentários no código mencionando coisas para arrumar, como funções que devem
+ser adicionadas.
+ Não há verificações para caso algo de errado nos mallocs por exemplo.
  
 MUDAR POWERUP:
  Mudar struct do powerup para ter uma struct para cada powerup especifico, e cada uma carregar
@@ -29,9 +24,6 @@ LIBERAR MEMÓRIA:
  Atualmente há memórias que não estão sendo desalocadas, um exemplo são as balas dos inimigos
 que não são liberadas quando os mesmos são mortos, a correção é simples apenas o fazendo ao chamar
 a função de destroi inimigos.  
- 
-BUGS:
- Há um bug visual que os inimigos ficam meio "cortados" se movimentando, talvez não tenha concerto.
 
 NASCIMENTO DE INIMIGOS:
  Os inimigos podem nascer no mesmo lugar e isso não deve acontecer, posteriormente isso deve ser corrigido.
@@ -39,7 +31,4 @@ NASCIMENTO DE INIMIGOS:
 CORREÇÕES:
  Estas são atualizações tornam o jogo melhor no entanto não devem prejudicar na nota,
 por exemplo, quando um inimigo morre seus tiros desaparecem da tela junto com o mesmo, 
-isto pode ser corrigido ao criar uma lista de balas fora do inimigo.
- Outra coisa são as balas que não desaparecem quando acertam inimigos, o que pode/deve
-ser consertado no futuro. Por conta da aleatoriedade e da ordem da verificação de colisão 
-inimigos podem acabar se colidindo sem consequencias.
+isto pode ser corrigido ao criar uma lista de balas fora do inimigo, parece complicado.

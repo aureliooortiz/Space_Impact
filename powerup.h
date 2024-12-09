@@ -2,6 +2,7 @@
 #define __POWERUP_H__
 
 #include <allegro5/allegro.h>
+#include <stdlib.h>
 
 #include "player.h"
 #include "bala.h"
@@ -11,8 +12,7 @@
 // Tempo que o player utiliza o tiro congelante
 #define GELO_COOLDOWN 500
 
-#define POWERUP_COOLDOWN 800
-//#define LADO_POWERUP 30
+#define POWERUP_COOLDOWN 600
 #define LARG_POWERUP 30
 #define ALT_POWERUP 30
 
@@ -26,8 +26,17 @@ struct coracao_t {
 	float alt_spr ;
 };
 
+struct gelo_t {
+	ALLEGRO_BITMAP *gelo_spr ;
+	float larg_spr ;
+	float alt_spr ;
+};
+
+
 struct powerup_t {
+	//struct powerup_t *prox ;
 	struct coracao_t *coracao ;
+	struct gelo_t *gelo ;
 	int x ;
 	int y ;
 	int tipo ;
@@ -37,12 +46,16 @@ struct powerup_t {
 	int coletado ;
 } ;
 
-struct powerup_t cria_powerup () ;
+struct powerup_t cria_powerup (int x, int y, int tipo) ;
+
+void desenha_powerup (struct powerup_t *power) ;
 
 void movimenta_powerup (struct powerup_t *p, int passo, int trajetoria) ;
 
 void tiro_congelante (struct bala_t *b) ;
 
 // Coração para recuperar vida
+
+void destroi_powerup (struct powerup_t *p) ;
 
 #endif

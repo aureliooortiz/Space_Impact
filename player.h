@@ -27,6 +27,11 @@ struct jogador_t {
 	struct controle_t *controle ;
 	struct arma_t *arma ;
 	ALLEGRO_BITMAP *player_spr ;
+	ALLEGRO_BITMAP *balas_spr ;
+	float larg_spr_player ;
+	float alt_spr_player ;
+	float larg_spr_bala ;
+	float alt_spr_bala ;
 	// Posição atual do jogador
 	int x ;
 	int y ;
@@ -35,12 +40,14 @@ struct jogador_t {
 	int vida ;
 	int invulnerabilidade ;
 	int gelo_timer ;
-	float larg_spr_player ;
-	float alt_spr_player ;
 } ;
 
 // Cria e retorna um player
 struct jogador_t *cria_jogador (int x, int y) ;
+
+void desenha_jogador (struct jogador_t *player) ;
+
+void desenha_balas_jogador (struct jogador_t *player) ;
 
 // Verifica e movimenta o player
 void movimenta_jogador (struct jogador_t *p, int passo, int trajetoria) ;
@@ -48,6 +55,9 @@ void movimenta_jogador (struct jogador_t *p, int passo, int trajetoria) ;
 void jogador_atira (struct jogador_t *p) ;
 
 void jogador_perde_vida (struct jogador_t *p) ;
+
+// Atualiza posição dos tiros do jogador em tela e os destroi se precisar
+void atualiza_balas (struct jogador_t *p) ;
 
 // Destroi um player
 void destroi_jogador (struct jogador_t *p) ;

@@ -2,8 +2,13 @@
 #define __UTILI_H__
 
 // Definições da janela
+#define ALT_TELA 300
+#define LARG_TELA 1200
+
+/*
 #define ALT_TELA 800
-#define LARG_TELA 1400
+#define LARG_TELA 1200
+*/
 #define POS_TELA 0
 #define NOME_TELA "Space Impact"
 

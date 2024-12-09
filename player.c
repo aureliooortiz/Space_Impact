@@ -23,6 +23,29 @@ struct jogador_t *cria_jogador (int x, int y) {
 	return p ;
 }
 
+void desenha_jogador (struct jogador_t *player) {
+	// Player pisca caso esteja invulneravel
+	if (!player->invulnerabilidade || ((player->invulnerabilidade % 2) == 0)) {
+		// Desenha o jogador
+		al_draw_bitmap_region(player->player_spr, 0, 2 * player->alt_spr_player, 
+								player->larg_spr_player, player->alt_spr_player, player->x, player->y, 0) ;
+	}
+}
+
+void desenha_balas_jogador (struct jogador_t *player) {
+	ALLEGRO_COLOR azul_claro ;
+	
+	azul_claro = al_map_rgb(173, 216, 230) ;
+	// Desenha os tiros do player na tela
+	for (struct bala_t *b = player->arma->bala; b != NULL; b = b->prox) {
+		if (b->congelante) {	
+			al_draw_tinted_bitmap (player->balas_spr, azul_claro, b->x, b->y, 0) ;
+		} else {
+			al_draw_bitmap (player->balas_spr, b->x, b->y, 0) ;
+		}	
+	}
+}
+
 // Verifica e movimenta o player
 void movimenta_jogador (struct jogador_t *p, int passo, int trajetoria) {
 	switch (trajetoria) {
@@ -66,6 +89,39 @@ void jogador_atira (struct jogador_t *p) {
 void jogador_perde_vida (struct jogador_t *p) {
 	p->vida-- ;
 	p->invulnerabilidade = DANO_COOLDOWN ;
+}
+
+
+// Atualiza posição dos tiros do jogador em tela e os destroi se precisar
+void atualiza_balas (struct jogador_t *p) {
+	struct bala_t *ant ;
+	
+	ant = NULL ;
+	// Percorre por cada bala
+	for (struct bala_t *atual = p->arma->bala; atual != NULL;) {
+		// Atualiza posição da bala
+		atual->x += MOVIMENTO_BALA ;
+		
+		// Verifica se o tiro saiu da tela ou acertou um inimigo
+		if (atual->x > LARG_TELA || atual->acertou) {
+			// Caso seja o primeiro tiro da lista
+			if (!ant) {
+				// Aponta para o proximo e destroi a bala atual
+				p->arma->bala = (struct bala_t*) atual->prox ;
+				destroi_bala(atual) ;
+				atual = p->arma->bala ;
+			} else {
+				// Aponta para o proximo e destroi a bala atual
+				ant->prox = atual->prox ;
+				destroi_bala(atual) ;
+				atual = ant->prox ;
+			}
+		} else {
+			ant = atual ;
+			atual = (struct bala_t*)atual->prox ;
+		}
+	
+	}
 }
 
 // Destroi um player
